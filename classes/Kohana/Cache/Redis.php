@@ -73,10 +73,11 @@ class Kohana_Cache_Redis extends Cache {
 		if ($value === FALSE)
 		{
 			$value = (NULL === $default) ? NULL : $default;
+                        return $value;
 		}
 
 		// Return the value
-		return $value;
+		return igbinary_unserialize($value);
 	}
 
 	/**
@@ -99,7 +100,7 @@ class Kohana_Cache_Redis extends Cache {
 	public function set($id, $data, $lifetime = 3600)
 	{
 		// Set the data to Redis
-		return $this->_redis->setex($this->_sanitize_id($id), $lifetime, $data);
+		return $this->_redis->setex($this->_sanitize_id($id), $lifetime, igbinary_serialize($data));
 	}
 
 	/**
@@ -137,4 +138,11 @@ class Kohana_Cache_Redis extends Cache {
 		$result = $this->_redis->flushDB();
 		return $result;
 	}
+        
+        public static function get_request_key(Request $request)
+        {
+                $uri     = $request->uri();
+		$query   = $request->query();
+		return sha1($uri.'?'.http_build_query($query, NULL, '&'));
+        }
 }
