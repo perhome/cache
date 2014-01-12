@@ -477,7 +477,6 @@ class Kohana_HTTP_Cache {
 		// If we have a TTL at this point, return
 		if ($ttl !== NULL)
 			return $ttl;
-
 		if ($expires = $response->headers('expires'))
 			return strtotime($expires) - $current_age;
 

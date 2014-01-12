@@ -64,7 +64,12 @@ return array
 			'.gitignore',
 			'.git',
 			'.svn'
-		)
+		),
+        'redis' => array(
+		'driver'             => 'redis',
+                'group'              => 'default',
+		'db'                 =>  8,
+		'default_expire'     => 3600,
 	)
 */
 );
