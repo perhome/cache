@@ -139,10 +139,11 @@ class Kohana_Cache_Redis extends Cache {
 		return $result;
 	}
         
-        public static function get_request_key(Request $request)
-        {
-                $uri     = $request->uri();
-		$query   = $request->query();
-		return sha1($uri.'?'.http_build_query($query, NULL, '&'));
-        }
+  public static function get_request_key(Request $request)
+  {
+    $uri     = $request->uri();
+    $query   = $request->query();
+    return sha1($uri.'?'.http_build_query($query, NULL, '&'));
+  }
+
 }
