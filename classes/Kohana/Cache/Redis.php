@@ -36,17 +36,17 @@ class Kohana_Cache_Redis extends Cache {
 
 		parent::__construct($config);
 
-                if ( ! isset($config['group']))
-                {
-                // Use the default group
-                $config['group'] = Redis_Client::$default;
-                }
+    if ( ! isset($config['group']))
+    {
+      // Use the default group
+      $config['group'] = Redis_Client::$default;
+    }
 
-                if (isset($config['db'])) {
-                $this->_db = $config['db'];
-                }
-    
-                // Setup Redis
+    if (isset($config['db'])) {
+      $this->_db = $config['db'];
+    }
+
+    // Setup Redis
 		$this->_redis = Redis_Client::instance($config['group'])->getDB($this->_db);
 	}
 
@@ -97,8 +97,12 @@ class Kohana_Cache_Redis extends Cache {
 	 * @param   integer  $lifetime  lifetime in seconds, maximum value 2592000
 	 * @return  boolean
 	 */
-	public function set($id, $data, $lifetime = 3600)
+	public function set($id, $data, $lifetime = NULL)
 	{
+		if ($lifetime === NULL)
+		{
+			$lifetime = Arr::get($this->_config, 'default_expire', Cache::DEFAULT_EXPIRE);
+		}
 		// Set the data to Redis
 		return $this->_redis->setex($this->_sanitize_id($id), $lifetime, igbinary_serialize($data));
 	}
@@ -138,5 +142,5 @@ class Kohana_Cache_Redis extends Cache {
 		$result = $this->_redis->flushDB();
 		return $result;
 	}
-
+        
 }
