@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 /**
- * [Kohana Cache](api/Kohana_Cache) Redis driver,
+ * [Kohana Cache](api/Kohana_Cache) ssdb driver,
  *
  * @package    Kohana/Cache
  * @category   Base
@@ -9,55 +9,44 @@
  * @copyright  (c) 2009-2012 Kohana Team
  * @license    http://kohanaphp.com/license
  */
-class Kohana_Cache_Redis extends Cache {
+class Kohana_Cache_Ssdb extends Cache {
 
 	/**
-	 * Redis resource
+	 * ssdb resource
 	 *
-	 * @var Redis
+	 * @var ssdb
 	 */
-	protected $_redis;
+	protected $_ssdb;
   
-	protected $_db = 8;
 
 	/**
-	 * Constructs the Redis Kohana_Cache object
+	 * Constructs the ssdb Kohana_Cache object
 	 *
 	 * @param   array  $config  configuration
 	 * @throws  Cache_Exception
 	 */
 	protected function __construct(array $config)
 	{
-		// Check for the Redis extention
-		if ( ! extension_loaded('redis'))
-		{
-			throw new Cache_Exception('Redis PHP extention not loaded');
-		}
-
 		parent::__construct($config);
 
-                if ( ! isset($config['group']))
-                {
-                // Use the default group
-                $config['group'] = Redis_Client::$default;
-                }
-
-                if (isset($config['db'])) {
-                $this->_db = $config['db'];
-                }
+    if ( ! isset($config['group']))
+    {
+      // Use the default group
+      $config['group'] = Ssdb_Client::$default;
+    }
     
-                // Setup Redis
-		$this->_redis = Redis_Client::instance($config['group'])->getDB($this->_db);
+    // Setup ssdb
+		$this->_ssdb = Ssdb_Client::instance($config['group']);
 	}
 
 	/**
 	 * Retrieve a cached value entry by id.
 	 *
-	 *     // Retrieve cache entry from Redis group
-	 *     $data = Cache::instance('Redis')->get('foo');
+	 *     // Retrieve cache entry from ssdb group
+	 *     $data = Cache::instance('ssdb')->get('foo');
 	 *
-	 *     // Retrieve cache entry from Redis group and return 'bar' if miss
-	 *     $data = Cache::instance('Redis')->get('foo', 'bar');
+	 *     // Retrieve cache entry from ssdb group and return 'bar' if miss
+	 *     $data = Cache::instance('ssdb')->get('foo', 'bar');
 	 *
 	 * @param   string  $id       id of cache to entry
 	 * @param   string  $default  default value to return if cache miss
@@ -66,8 +55,8 @@ class Kohana_Cache_Redis extends Cache {
 	 */
 	public function get($id, $default = NULL)
 	{
-		// Get the value from Redis
-		$value = $this->_redis->get($this->_sanitize_id($id));
+		// Get the value from ssdb
+		$value = $this->_ssdb->get($this->_sanitize_id($id));
 
 		// If the value wasn't found, normalise it
 		if ($value === FALSE)
@@ -85,8 +74,8 @@ class Kohana_Cache_Redis extends Cache {
 	 *
 	 *     $data = 'bar';
 	 *
-	 *     // Set 'bar' to 'foo' in Redis group for 10 minutes
-	 *     if (Cache::instance('Redis')->set('foo', $data, 600))
+	 *     // Set 'bar' to 'foo' in ssdb group for 10 minutes
+	 *     if (Cache::instance('ssdb')->set('foo', $data, 600))
 	 *     {
 	 *          // Cache was set successfully
 	 *          return
@@ -99,18 +88,18 @@ class Kohana_Cache_Redis extends Cache {
 	 */
 	public function set($id, $data, $lifetime = 3600)
 	{
-		// Set the data to Redis
-		return $this->_redis->setex($this->_sanitize_id($id), $lifetime, igbinary_serialize($data));
+		// Set the data to ssdb
+		return $this->_ssdb->setx($this->_sanitize_id($id), igbinary_serialize($data), $lifetime);
 	}
 
 	/**
 	 * Delete a cache entry based on id
 	 *
 	 *     // Delete the 'foo' cache entry immediately
-	 *     Cache::instance('Redis')->delete('foo');
+	 *     Cache::instance('ssdb')->delete('foo');
 	 *
 	 *     // Delete the 'bar' cache entry after 30 seconds
-	 *     Cache::instance('Redis')->delete('bar', 30);
+	 *     Cache::instance('ssdb')->delete('bar', 30);
 	 *
 	 * @param   string   $id       id of entry to delete
 	 * @return  boolean
@@ -118,7 +107,7 @@ class Kohana_Cache_Redis extends Cache {
 	public function delete($id)
 	{
 		// Delete the id
-		return $this->_redis->delete($this->_sanitize_id($id));
+		return $this->_ssdb->del($this->_sanitize_id($id));
 	}
 
 	/**
@@ -129,14 +118,12 @@ class Kohana_Cache_Redis extends Cache {
 	 * entry within the system for all clients.
 	 *
 	 *     // Delete all cache entries in the default group
-	 *     Cache::instance('Redis')->delete_all();
+	 *     Cache::instance('ssdb')->delete_all();
 	 *
 	 * @return  boolean
 	 */
 	public function delete_all()
 	{
-		$result = $this->_redis->flushDB();
-		return $result;
 	}
-
+        
 }
